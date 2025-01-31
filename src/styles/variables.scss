@@ -1,0 +1,22 @@
+// 颜色变量
+$primary-color: #2196f3;
+$secondary-color: #00bcd4;
+$background-color: #f0f2f5;
+$text-color: #333;
+$border-color: #e0e0e0;
+
+// 间距
+$spacing-unit: 8px;
+$container-padding: 2rem;
+
+// 圆角
+$border-radius: 16px;
+$border-radius-sm: 8px;
+
+// 阴影
+$box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+$box-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+
+// 过渡
+$transition-duration: 0.3s;
+$transition-timing: cubic-bezier(0.4, 0, 0.2, 1); 
