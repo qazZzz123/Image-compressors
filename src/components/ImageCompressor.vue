@@ -2,33 +2,20 @@
   <div class="container">
     <h1 class="title">智能图片压缩工具</h1>
     <div class="upload-container">
-      <div 
-        id="drop-zone" 
-        :class="{ 
-          'dragover': isDragging,
-          'disabled': isUploadDisabled 
-        }"
-        @dragenter.prevent="handleDragEnter"
-        @dragleave.prevent="handleDragLeave"
-        @dragover.prevent
-        @drop.prevent="handleDrop"
-        @click="triggerFileInput"
-      >
+      <div id="drop-zone" :class="{
+        'dragover': isDragging,
+        'disabled': isUploadDisabled
+      }" @dragenter.prevent="handleDragEnter" @dragleave.prevent="handleDragLeave" @dragover.prevent
+        @drop.prevent="handleDrop" @click="triggerFileInput">
         <div class="upload-icon" :class="{ 'uploading': isUploading }">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z"/>
+            <path fill="currentColor"
+              d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z" />
           </svg>
         </div>
         <p class="upload-text">{{ uploadText }}</p>
         <span class="upload-tip">支持 JPG、PNG、WebP 等格式，单个文件最大 20MB</span>
-        <input 
-          ref="fileInput"
-          type="file" 
-          accept="image/*" 
-          multiple 
-          class="file-input"
-          @change="handleFileSelect"
-        >
+        <input ref="fileInput" type="file" accept="image/*" multiple class="file-input" @change="handleFileSelect">
         <div class="upload-counter">{{ images.length }}/{{ MAX_UPLOAD_COUNT }}</div>
       </div>
     </div>
@@ -38,47 +25,42 @@
         <div class="batch-operations">
           <div class="left-actions">
             <div class="checkbox-wrapper">
-              <input 
-                type="checkbox" 
-                v-model="isAllSelected"
-                @change="toggleSelectAll"
-                class="select-all-checkbox"
-              >
-              <span>全选</span>
+              <label class="select-all-label">
+                <input type="checkbox" v-model="isAllSelected" @change="toggleSelectAll" class="select-all-checkbox">
+                <span class="checkbox-text">全选</span>
+              </label>
               <span v-if="selectedCount > 0" class="selected-count">
-                已选择 {{ selectedCount }} 项
+                已选择 <span class="count-number">{{ selectedCount }}</span> 项
               </span>
             </div>
           </div>
           <div class="right-actions">
-            <button 
-              class="batch-btn download"
-              :disabled="!hasSelected"
-              @click="batchDownload"
-            >
+            <el-button plain type="primary" :disabled="!hasSelected" @click="batchDownload" class="ant-btn">
+              <svg class="anticon" viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor">
+                <path d="M624 706.3h-74.1V464c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v242.3H400c-6.7 0-10.4 7.7-6.3 12.9l112 141.7a8 8 0 0 0 12.6 0l112-141.7c4.1-5.2.4-12.9-6.3-12.9z"/>
+                <path d="M811.4 366.7C765.6 245.9 648.9 160 512.2 160S258.8 245.8 213 366.6C127.3 389.1 64 467.2 64 560c0 110.5 89.5 200 200 200h88v-64h-88c-74.8 0-136-61.2-136-136 0-71.6 57.9-130.1 129.1-131.9l30.3-.7 14.6-27.2c37.3-69.4 107.6-112.2 183.9-112.2 77.3 0 147.5 42.6 184.9 112.1l14.6 27.2 30.3.7c71.2 1.8 129.1 60.3 129.1 131.9 0 74.8-61.2 136-136 136h-88v64h88c110.5 0 200-89.5 200-200 0-92.7-63.3-170.7-149-193.2z"/>
+              </svg>
               <span>批量下载</span>
-            </button>
-            <button 
-              class="batch-btn delete"
-              :disabled="!hasSelected"
-              @click="batchDelete"
-            >
+            </el-button>
+            <el-button plain type="danger" :disabled="!hasSelected" @click="batchDelete" class="ant-btn">
+              <svg class="anticon" viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor">
+                <path d="M832 256h-184v-72c0-30.9-25.1-56-56-56h-160c-30.9 0-56 25.1-56 56v72h-184c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h56v544c0 30.9 25.1 56 56 56h480c30.9 0 56-25.1 56-56V328h56c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM432 184c0-4.4 3.6-8 8-8h144c4.4 0 8 3.6 8 8v72h-160v-72zm288 656c0 4.4-3.6 8-8 8H312c-4.4 0-8-3.6-8-8V328h416v512z"/>
+                <path d="M448 416c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16s16-7.2 16-16V432c0-8.8-7.2-16-16-16zM576 416c-8.8 0-16 7.2-16 16v288c0 8.8 7.2 16 16 16s16-7.2 16-16V432c0-8.8-7.2-16-16-16z"/>
+              </svg>
               <span>批量删除</span>
-            </button>
+            </el-button>
           </div>
         </div>
         <div class="quality-control">
-          <label>默认压缩质量</label>
+          <div class="quality-header">
+            <span class="quality-title">默认压缩质量</span>
+            <span class="quality-tip">调节压缩率可以平衡图片质量和文件大小</span>
+          </div>
           <div class="slider-container">
-            <input 
-              type="range" 
-              v-model="defaultQuality" 
-              min="0" 
-              max="100"
-              class="slider"
-              @input="updateAllEstimates"
-            >
-            <span class="quality-value">{{ defaultQuality }}%</span>
+            <input type="range" v-model="defaultQuality" min="0" max="100" class="slider" @input="updateAllEstimates">
+            <span class="quality-value">
+              <span class="number">{{ defaultQuality }}</span><span class="percent-sign">%</span>
+            </span>
           </div>
         </div>
         <div class="total-stats">
@@ -98,30 +80,13 @@
       </div>
 
       <div class="images-container">
-        <TransitionGroup 
-          name="image-list" 
-          tag="div" 
-          class="image-list"
-        >
-          <div v-for="(image, index) in paginatedImages" 
-            :key="image.file.name + index" 
-            class="image-item"
-            :class="{ 
-              'processing': image.processing,
-              'selected': image.selected 
-            }"
-          >
-            <input 
-              type="checkbox" 
-              v-model="image.selected"
-              @change="updateSelectAll"
-              class="image-checkbox"
-            >
-            <button 
-              class="delete-btn"
-              @click.stop="deleteImage(index)"
-              :disabled="image.processing"
-            >
+        <TransitionGroup name="image-list" tag="div" class="image-list">
+          <div v-for="(image, index) in paginatedImages" :key="image.file.name + index" class="image-item" :class="{
+            'processing': image.processing,
+            'selected': image.selected
+          }">
+            <input type="checkbox" v-model="image.selected" @change="updateSelectAll" class="image-checkbox">
+            <button class="delete-btn" @click.stop="deleteImage(index)" :disabled="image.processing">
               <span class="delete-icon">×</span>
             </button>
             <div class="image-preview">
@@ -135,14 +100,8 @@
               <div class="individual-quality-control" v-if="showQualityControl(image.outputFormat)">
                 <label>压缩质量</label>
                 <div class="slider-container">
-                  <input 
-                    type="range" 
-                    v-model="image.quality" 
-                    min="0" 
-                    max="100"
-                    class="slider"
-                    @input="updateEstimate(getOriginalIndex(index))"
-                  >
+                  <input type="range" v-model="image.quality" min="0" max="100" class="slider"
+                    @input="updateEstimate(getOriginalIndex(index))">
                   <span class="quality-value">{{ image.quality }}%</span>
                 </div>
               </div>
@@ -164,23 +123,17 @@
               <div class="compression-progress" v-if="image.processing">
                 <div class="progress-bar" :style="{ width: image.progress + '%' }"></div>
               </div>
-              <button 
-                @click="downloadImage(index)" 
-                class="download-btn"
-                :disabled="image.processing"
-              >
+              <button @click="downloadImage(index)" class="download-btn" :disabled="image.processing">
                 <span>{{ image.processing ? '压缩中...' : '下载' }}</span>
-                <svg v-if="!image.processing" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"/>
+                <svg v-if="!image.processing" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                  viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z" />
                 </svg>
                 <div v-else class="spinner"></div>
               </button>
               <div class="format-control">
                 <label>转换格式</label>
-                <select 
-                  v-model="image.outputFormat" 
-                  @change="handleFormatChange(getOriginalIndex(index))"
-                >
+                <select v-model="image.outputFormat" @change="handleFormatChange(getOriginalIndex(index))">
                   <option value="image/jpeg">JPG</option>
                   <option value="image/png">PNG</option>
                   <option value="image/webp">WebP</option>
@@ -194,44 +147,24 @@
 
       <div class="pagination-container">
         <div class="pagination" v-show="images.length > pageSize">
-          <button 
-            class="page-btn"
-            :disabled="currentPage === 1"
-            @click="handlePageChange(currentPage - 1)"
-          >
+          <button class="page-btn" :disabled="currentPage === 1" @click="handlePageChange(currentPage - 1)">
             上一页
           </button>
           <div class="page-numbers">
-            <button 
-              v-for="pageNum in displayedPages" 
-              :key="pageNum"
-              class="page-number"
-              :class="{ 
-                'active': currentPage === pageNum,
-                'ellipsis': pageNum === '...'
-              }"
-              @click="handlePageNumClick(pageNum)"
-            >
+            <button v-for="pageNum in displayedPages" :key="pageNum" class="page-number" :class="{
+              'active': currentPage === pageNum,
+              'ellipsis': pageNum === '...'
+            }" @click="handlePageNumClick(pageNum)">
               {{ pageNum }}
             </button>
           </div>
           <div class="page-jump">
             <span>跳至</span>
-            <input
-              type="number"
-              v-model.number="jumpPage"
-              :min="1"
-              :max="totalPages"
-              @keyup.enter="handleJumpPage"
-              @blur="handleJumpPage"
-            >
+            <input type="number" v-model.number="jumpPage" :min="1" :max="totalPages" @keyup.enter="handleJumpPage"
+              @blur="handleJumpPage">
             <span>页</span>
           </div>
-          <button 
-            class="page-btn"
-            :disabled="currentPage === totalPages"
-            @click="handlePageChange(currentPage + 1)"
-          >
+          <button class="page-btn" :disabled="currentPage === totalPages" @click="handlePageChange(currentPage + 1)">
             下一页
           </button>
         </div>
@@ -239,13 +172,7 @@
     </div>
 
     <div class="compression-notice" v-if="selectedFormat === 'png' || selectedFormat === 'avif'">
-      <el-alert
-        :title="formatNoticeTitle"
-        type="info"
-        :description="formatNoticeDesc"
-        show-icon
-        :closable="false"
-      />
+      <el-alert :title="formatNoticeTitle" type="info" :description="formatNoticeDesc" show-icon :closable="false" />
     </div>
   </div>
 </template>
@@ -308,11 +235,11 @@ watch([() => images.length, pageSize], () => {
 })
 
 // 计算总大小和压缩率
-const totalOriginalSize = computed(() => 
+const totalOriginalSize = computed(() =>
   images.reduce((sum, img) => sum + img.originalSize, 0)
 )
 
-const totalEstimatedSize = computed(() => 
+const totalEstimatedSize = computed(() =>
   images.reduce((sum, img) => sum + img.estimatedSize, 0)
 )
 
@@ -362,7 +289,7 @@ const compressImage = async (file: File, quality: number, format: string): Promi
     img.onload = () => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
-      
+
       if (!ctx) {
         reject(new Error('无法获取canvas context'))
         return
@@ -400,13 +327,13 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
   } catch (error) {
     console.error('计算预计大小失败:', error)
     const baseSize = file.size
-    
+
     // 无损格式使用固定比例
     if (isLosslessFormat(format)) {
       const ratio = format === 'image/png' ? 1.2 : 1.0 // PNG可能略大，AVIF保持原大小
       return Math.round(baseSize * ratio)
     }
-    
+
     // 其他格式使用质量参数
     const qualityRatio = quality / 100
     let formatRatio = 1
@@ -418,7 +345,7 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
         formatRatio = 0.6
         break
     }
-    
+
     return Math.round(baseSize * qualityRatio * formatRatio)
   }
 }
@@ -430,7 +357,7 @@ const updateEstimate = async (index: number) => {
     image.estimating = true
     try {
       image.estimatedSize = await calculateEstimatedSize(
-        image.file, 
+        image.file,
         image.quality,
         image.outputFormat
       )
@@ -470,8 +397,8 @@ const checkFile = (file: File): boolean => {
     return false
   }
 
-  const isDuplicate = images.some(img => 
-    img.file.name === file.name && 
+  const isDuplicate = images.some(img =>
+    img.file.name === file.name &&
     img.file.size === file.size &&
     img.file.lastModified === file.lastModified
   )
@@ -490,25 +417,25 @@ const MAX_UPLOAD_COUNT = 18
 // 修改文件处理方法
 const processFiles = async (files: File[]) => {
   isUploading.value = true
-  
+
   // 检查当前已有图片数量
   const currentCount = images.length
   const remainingSlots = MAX_UPLOAD_COUNT - currentCount
-  
+
   if (remainingSlots <= 0) {
     ElMessage.warning('最多只能上传18张图片')
     isUploading.value = false
     return
   }
-  
+
   // 获取可上传的文件数量
   const filesToProcess = files.slice(0, remainingSlots)
   let successCount = 0
-  
+
   if (files.length > remainingSlots) {
     ElMessage.warning(`当前还可以上传${remainingSlots}张图片，已自动截取前${remainingSlots}张`)
   }
-  
+
   for (const file of filesToProcess) {
     if (!checkFile(file)) continue
 
@@ -528,7 +455,7 @@ const processFiles = async (files: File[]) => {
         selected: false,
         outputFormat: 'image/jpeg' // 始终默认为 JPG 格式
       }
-      
+
       images.push(imageItem)
       await updateEstimate(images.length - 1)
       successCount++
@@ -537,9 +464,9 @@ const processFiles = async (files: File[]) => {
       ElMessage.error(`文件 ${file.name} 处理失败`)
     }
   }
-  
+
   isUploading.value = false
-  
+
   // 显示上传成功提示
   if (successCount > 0) {
     ElMessage.success({
@@ -574,14 +501,14 @@ const handleDrop = async (e: DragEvent) => {
   try {
     isDragging.value = false
     const files = e.dataTransfer?.files
-    
+
     if (!files || files.length === 0) return
-    
+
     if (images.length >= MAX_UPLOAD_COUNT) {
       ElMessage.warning('最多只能上传18张图片')
       return
     }
-    
+
     await processFiles(Array.from(files))
   } catch (error) {
     console.error('文件处理错误:', error)
@@ -593,14 +520,14 @@ const handleFileSelect = async (e: Event) => {
   try {
     const input = e.target as HTMLInputElement
     const files = input.files
-    
+
     if (!files || files.length === 0) return
-    
+
     if (images.length >= MAX_UPLOAD_COUNT) {
       ElMessage.warning('最多只能上传18张图片')
       return
     }
-    
+
     await processFiles(Array.from(files))
   } catch (error) {
     console.error('文件处理错误:', error)
@@ -635,20 +562,20 @@ const downloadImage = async (index: number) => {
   const originalIndex = getOriginalIndex(index)
   const image = images[originalIndex]
   image.processing = true
-  
+
   try {
     const blob = await compressImage(image.file, image.quality, image.outputFormat)
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     const fileName = image.file.name.replace(/\.[^/.]+$/, '') + getFileExtension(image.outputFormat)
-    
+
     link.href = url
     link.download = fileName
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-    
+
     image.compressedBlob = blob
     image.compressedSize = blob.size
     ElMessage.success('下载成功')
@@ -792,36 +719,36 @@ const displayedPages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
   const arr: (number | string)[] = []
-  
+
   if (total <= 7) {
     // 如果总页数小于等于7，显示所有页码
     return Array.from({ length: total }, (_, i) => i + 1)
   }
-  
+
   // 始终显示第一页
   arr.push(1)
-  
+
   if (current > 4) {
     arr.push('...')
   }
-  
+
   // 计算中间要显示的页码
   const start = Math.max(2, current - 2)
   const end = Math.min(total - 1, current + 2)
-  
+
   for (let i = start; i <= end; i++) {
     arr.push(i)
   }
-  
+
   if (current < total - 3) {
     arr.push('...')
   }
-  
+
   // 始终显示最后一页
   if (total > 1) {
     arr.push(total)
   }
-  
+
   return arr
 })
 
@@ -844,8 +771,8 @@ const handleFormatChange = (index: number) => {
 
 const selectedFormat = ref('')
 const formatNoticeTitle = computed(() => {
-  return selectedFormat.value === 'png' 
-    ? 'PNG 格式特性说明' 
+  return selectedFormat.value === 'png'
+    ? 'PNG 格式特性说明'
     : 'AVIF 格式特性说明'
 })
 const formatNoticeDesc = computed(() => {
@@ -879,9 +806,11 @@ const formatNoticeDesc = computed(() => {
 }
 
 @keyframes titleGlow {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(100%) blur(0);
   }
+
   50% {
     filter: brightness(110%) blur(1px);
   }
@@ -911,12 +840,10 @@ const formatNoticeDesc = computed(() => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(33, 150, 243, 0.1),
-    transparent
-  );
+  background: linear-gradient(45deg,
+      transparent,
+      rgba(33, 150, 243, 0.1),
+      transparent);
   transform: rotate(45deg);
   animation: shimmer 3s infinite;
   pointer-events: none;
@@ -926,6 +853,7 @@ const formatNoticeDesc = computed(() => {
   0% {
     transform: translateX(-100%) rotate(45deg);
   }
+
   100% {
     transform: translateX(100%) rotate(45deg);
   }
@@ -984,35 +912,57 @@ const formatNoticeDesc = computed(() => {
   cursor: pointer;
 }
 
-.select-all-checkbox {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
+.select-all-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
+  user-select: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: #f5f7fa;
+}
+
+.select-all-label:hover {
+  background: #ecf5ff;
+}
+
+.checkbox-text {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.select-all-checkbox {
   appearance: none;
-  -webkit-appearance: none;
-  background: white;
-  border: 2px solid #ddd;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #dcdfe6;
   border-radius: 4px;
+  cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .select-all-checkbox:checked {
-  background: #2196f3;
-  border-color: #2196f3;
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 }
 
 .select-all-checkbox:checked::after {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 2px;
   width: 4px;
   height: 8px;
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+  margin-top: -2px;  /* 微调垂直位置 */
 }
 
 .image-checkbox {
@@ -1029,11 +979,25 @@ const formatNoticeDesc = computed(() => {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-checkbox:checked {
-  background: #2196f3;
-  border-color: #2196f3;
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+.image-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;  /* 微调垂直位置 */
 }
 
 .image-item:hover .image-checkbox {
@@ -1122,50 +1086,51 @@ const formatNoticeDesc = computed(() => {
   box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
 }
 
-.image-checkbox:checked {
-  background: #2196f3;
-  border-color: #2196f3;
-}
-
-.image-checkbox:checked::after {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 3px;
-  width: 6px;
-  height: 12px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.select-all-checkbox:checked {
-  background: #2196f3;
-  border-color: #2196f3;
-}
-
-.select-all-checkbox:checked::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
 .right-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
   align-items: center;
 }
 
 .selected-count {
-  color: #666;
-  font-size: 0.875rem;
-  margin-left: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  margin-left: 12px;
+  font-size: 13px;
+  color: var(--el-color-primary);
+  background: rgba(64, 158, 255, 0.1);
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.count-number {
+  display: inline-block;
+  margin: 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+  min-width: 16px;
+  text-align: center;
+  font-feature-settings: "tnum";
+  animation: countPulse 0.3s ease-out;
+}
+
+@keyframes countPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.selected-count:hover {
+  background: rgba(64, 158, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .image-item.selected {
@@ -1278,56 +1243,104 @@ const formatNoticeDesc = computed(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .quality-control {
-  margin: 3rem 0;
+  margin: 2rem 0;
   background: white;
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #ebeef5;
+}
+
+.quality-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.quality-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.quality-tip {
+  font-size: 12px;
+  color: #909399;
 }
 
 .slider-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: 16px;
+  padding: 8px 0;
 }
 
 .slider {
   flex: 1;
   -webkit-appearance: none;
-  height: 8px;
-  background: linear-gradient(90deg, #2196f3 var(--value, 0%), #e0e0e0 0);
-  border-radius: 4px;
+  height: 6px;
+  background: linear-gradient(90deg, 
+    var(--el-color-primary) var(--value, 0%), 
+    #e4e7ed var(--value, 0%)
+  );
+  border-radius: 3px;
   outline: none;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 24px;
-  height: 24px;
-  background: #fff;
-  border: 2px solid #2196f3;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid var(--el-color-primary);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 10px rgba(33, 150, 243, 0.4);
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 }
 
 .quality-value {
-  min-width: 4rem;
-  text-align: right;
-  font-weight: 600;
-  color: #2196f3;
+  min-width: 48px;
+  padding: 4px 12px;
+  text-align: center;
+  background: #f5f7fa;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.quality-value .number {
+  font-family: 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--el-color-primary);
+  letter-spacing: -0.5px;
+}
+
+.percent-sign {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-left: 2px;
+  color: var(--el-color-primary);
 }
 
 .image-list {
@@ -1388,7 +1401,8 @@ const formatNoticeDesc = computed(() => {
 /* 预计大小的样式 */
 .size-item:last-child strong {
   font-size: 1.1rem;
-  color: #00bcd4; /* 使用更清爽的蓝绿色 */
+  color: #00bcd4;
+  /* 使用更清爽的蓝绿色 */
   font-weight: 600;
   background: linear-gradient(45deg, #00bcd4, #2196f3);
   -webkit-background-clip: text;
@@ -1441,10 +1455,12 @@ const formatNoticeDesc = computed(() => {
     transform: scaleX(0.3);
     opacity: 0;
   }
+
   50% {
     transform: scaleX(1);
     opacity: 1;
   }
+
   100% {
     transform: scaleX(0.3);
     opacity: 0;
@@ -1455,9 +1471,11 @@ const formatNoticeDesc = computed(() => {
   0% {
     opacity: 0;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
@@ -1488,12 +1506,10 @@ const formatNoticeDesc = computed(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
   transition: 0.5s;
 }
 
@@ -1635,7 +1651,7 @@ const formatNoticeDesc = computed(() => {
   .image-list {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .image-item {
     max-width: 320px;
   }
@@ -1645,7 +1661,7 @@ const formatNoticeDesc = computed(() => {
   .image-list {
     grid-template-columns: repeat(1, 1fr);
   }
-  
+
   .image-item {
     max-width: 300px;
   }
@@ -1728,7 +1744,7 @@ const formatNoticeDesc = computed(() => {
     justify-content: center;
     margin: 8px 0;
   }
-  
+
   .pagination {
     padding: 8px;
   }
@@ -1893,6 +1909,7 @@ const formatNoticeDesc = computed(() => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1909,6 +1926,7 @@ const formatNoticeDesc = computed(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1921,10 +1939,12 @@ const formatNoticeDesc = computed(() => {
     transform: scale(0.95);
     opacity: 0.7;
   }
+
   50% {
     transform: scale(1);
     opacity: 1;
   }
+
   100% {
     transform: scale(0.95);
     opacity: 0.7;
@@ -1934,4 +1954,96 @@ const formatNoticeDesc = computed(() => {
 .image-item.processing {
   animation: pulse 1.5s ease-in-out infinite;
 }
-</style> 
+
+/* Ant Design 风格按钮样式 */
+.ant-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px !important;
+  height: 32px;
+  padding: 4px 16px !important;
+  font-size: 14px;
+  border-radius: 6px !important;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+}
+
+.ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ant-btn:active {
+  transform: translateY(0);
+}
+
+/* Ant Design 图标样式 */
+.anticon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  line-height: 0;
+  vertical-align: -0.125em;
+  transition: transform 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  margin-right: 4px;
+}
+
+.ant-btn:hover .anticon {
+  transform: scale(1.15) rotate(-4deg);
+}
+
+.ant-btn[type="danger"]:hover .anticon {
+  transform: scale(1.15) rotate(4deg);
+}
+
+/* 主要按钮样式 */
+.ant-btn[type="primary"] {
+  border-color: var(--el-color-primary) !important;
+  color: var(--el-color-primary) !important;
+}
+
+.ant-btn[type="primary"]:hover {
+  background: var(--el-color-primary-light-9) !important;
+  border-color: var(--el-color-primary) !important;
+}
+
+/* 危险按钮样式 */
+.ant-btn[type="danger"] {
+  border-color: var(--el-color-danger) !important;
+  color: var(--el-color-danger) !important;
+}
+
+.ant-btn[type="danger"]:hover {
+  background: var(--el-color-danger-light-9) !important;
+  border-color: var(--el-color-danger) !important;
+}
+
+/* 禁用状态 */
+.ant-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.ant-btn:disabled .anticon {
+  transform: none !important;
+}
+
+/* 按钮内容样式 */
+.ant-btn span {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  position: relative;
+  top: 0.5px;
+  margin-left: 2px;
+}
+
+/* 右侧操作按钮容器 */
+.right-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+</style>
