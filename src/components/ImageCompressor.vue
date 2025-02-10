@@ -295,20 +295,60 @@ const compressImage = async (file: File, quality: number, format: string): Promi
         return
       }
 
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
+      // 计算新的尺寸，对大图片进行缩放
+      let { width, height } = img
+      const maxSize = 2048 // 最大尺寸限制为 2048px
+      let scale = 1
 
-      // 修改质量范围为30-95
-      const normalizedQuality = Math.min(Math.max(quality, 30), 95) / 100
+      // 根据图片大小动态调整缩放比例
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        scale = 0.7
+      } else if (file.size > 2 * 1024 * 1024) { // 2MB
+        scale = 0.8
+      } else if (file.size > 1 * 1024 * 1024) { // 1MB
+        scale = 0.9
+      }
+      
+      // 应用尺寸缩放
+      width = Math.round(width * scale)
+      height = Math.round(height * scale)
+      
+      // 确保不超过最大尺寸限制
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width)
+          width = maxSize
+        } else {
+          width = Math.round((width * maxSize) / height)
+          height = maxSize
+        }
+      }
 
-      // 无损格式使用默认质量
-      const compressionQuality = isLosslessFormat(format) ? undefined : normalizedQuality
+      canvas.width = width
+      canvas.height = height
+      
+      // 使用双线性插值算法进行缩放
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, 0, 0, width, height)
+
+      // 计算压缩质量
+      let compressionQuality = isLosslessFormat(format) ? undefined : quality / 100
+
+      // 对于移动端拍摄的大图片，额外降低质量
+      if (!isLosslessFormat(format) && file.size > 2 * 1024 * 1024) {
+        compressionQuality = Math.min(compressionQuality as number, 0.8)
+      }
 
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            resolve(blob)
+            // 如果压缩后的大小大于原始大小，返回原始文件
+            if (blob.size > file.size) {
+              resolve(file)
+            } else {
+              resolve(blob)
+            }
           } else {
             reject(new Error('转换失败'))
           }
@@ -326,33 +366,38 @@ const compressImage = async (file: File, quality: number, format: string): Promi
 const calculateEstimatedSize = async (file: File, quality: number, format: string): Promise<number> => {
   try {
     // 规范化质量值到30-95范围
-    const normalizedQuality = Math.min(Math.max(quality, 30), 95)
+    const quality = Math.min(Math.max(quality, 30), 95)
     
     // 无损格式返回原始大小
     if (isLosslessFormat(format)) {
       return file.size
     }
 
-    const blob = await compressImage(file, normalizedQuality, format)
+    const blob = await compressImage(file, quality, format)
     return blob.size
   } catch (error) {
     console.error('计算预计大小失败:', error)
     const baseSize = file.size
     
     // 估算压缩后的大小
-    const qualityRatio = normalizedQuality / 100
+    const qualityRatio = quality / 100
     let formatRatio = 1
     
     switch (format) {
       case 'image/jpeg':
-        formatRatio = 0.8
+        formatRatio = 0.7  // 降低 JPEG 的压缩比
         break
       case 'image/webp':
-        formatRatio = 0.6
+        formatRatio = 0.5  // 降低 WebP 的压缩比
         break
       case 'image/avif':
-        formatRatio = 0.5
+        formatRatio = 0.4  // 降低 AVIF 的压缩比
         break
+    }
+
+    // 对于大于 2MB 的图片，增加额外的压缩比
+    if (baseSize > 2 * 1024 * 1024) {
+      formatRatio *= 0.8
     }
 
     return Math.round(baseSize * qualityRatio * formatRatio)
