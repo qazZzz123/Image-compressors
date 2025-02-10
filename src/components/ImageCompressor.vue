@@ -1665,6 +1665,57 @@ const formatNoticeDesc = computed(() => {
   .image-item {
     max-width: 300px;
   }
+
+  .batch-operations {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .left-actions,
+  .right-actions {
+    width: 100%;
+  }
+
+  .right-actions {
+    justify-content: space-between;
+  }
+
+  .ant-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .selected-count {
+    margin-left: 0;
+    padding: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ant-btn {
+    padding: 4px 12px !important;
+    font-size: 13px;
+  }
+
+  .ant-btn .anticon {
+    margin-right: 2px;
+  }
+
+  .batch-operations {
+    padding: 8px;
+  }
+
+  .checkbox-wrapper {
+    width: 100%;
+  }
+
+  .select-all-label {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .file-input {
