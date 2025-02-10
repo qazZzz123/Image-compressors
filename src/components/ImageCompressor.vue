@@ -57,7 +57,7 @@
             <span class="quality-tip">调节压缩率可以平衡图片质量和文件大小</span>
           </div>
           <div class="slider-container">
-            <input type="range" v-model="defaultQuality" min="0" max="100" class="slider" @input="updateAllEstimates">
+            <input type="range" v-model="defaultQuality" min="30" max="95" class="slider" @input="updateAllEstimates">
             <span class="quality-value">
               <span class="number">{{ defaultQuality }}</span><span class="percent-sign">%</span>
             </span>
@@ -100,7 +100,7 @@
               <div class="individual-quality-control" v-if="showQualityControl(image.outputFormat)">
                 <label>压缩质量</label>
                 <div class="slider-container">
-                  <input type="range" v-model="image.quality" min="0" max="100" class="slider"
+                  <input type="range" v-model="image.quality" min="30" max="95" class="slider"
                     @input="updateEstimate(getOriginalIndex(index))">
                   <span class="quality-value">{{ image.quality }}%</span>
                 </div>
@@ -200,7 +200,7 @@ interface ImageItem {
 const fileInput = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const isUploading = ref(false)
-const defaultQuality = ref(75)
+const defaultQuality = ref(85)
 const images = reactive<ImageItem[]>([])
 
 // 分页相关的状态
@@ -299,13 +299,21 @@ const compressImage = async (file: File, quality: number, format: string): Promi
       canvas.height = img.height
       ctx.drawImage(img, 0, 0)
 
-      // 无损格式不使用质量参数
-      const compressionQuality = isLosslessFormat(format) ? undefined : quality / 100
+      // 修改质量范围为30-95
+      const normalizedQuality = Math.min(Math.max(quality, 30), 95) / 100
+
+      // 无损格式使用默认质量
+      const compressionQuality = isLosslessFormat(format) ? undefined : normalizedQuality
 
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            resolve(blob)
+            // 确保压缩后的大小不会超过原始大小
+            if (blob.size > file.size) {
+              resolve(file)
+            } else {
+              resolve(blob)
+            }
           } else {
             reject(new Error('转换失败'))
           }
@@ -322,20 +330,27 @@ const compressImage = async (file: File, quality: number, format: string): Promi
 // 修改预计大小的计算方法
 const calculateEstimatedSize = async (file: File, quality: number, format: string): Promise<number> => {
   try {
-    const blob = await compressImage(file, quality, format)
+    // 规范化质量值到30-95范围
+    const normalizedQuality = Math.min(Math.max(quality, 30), 95)
+    
+    // 如果是100%质量，直接返回原始大小
+    if (quality >= 95) {
+      return file.size
+    }
+
+    const blob = await compressImage(file, normalizedQuality, format)
     return blob.size
   } catch (error) {
     console.error('计算预计大小失败:', error)
     const baseSize = file.size
 
-    // 无损格式使用固定比例
+    // 无损格式返回原始大小
     if (isLosslessFormat(format)) {
-      const ratio = format === 'image/png' ? 1.2 : 1.0 // PNG可能略大，AVIF保持原大小
-      return Math.round(baseSize * ratio)
+      return baseSize
     }
 
-    // 其他格式使用质量参数
-    const qualityRatio = quality / 100
+    // 其他格式使用质量参数估算
+    const qualityRatio = normalizedQuality / 100
     let formatRatio = 1
     switch (format) {
       case 'image/jpeg':
@@ -346,7 +361,7 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
         break
     }
 
-    return Math.round(baseSize * qualityRatio * formatRatio)
+    return Math.min(baseSize, Math.round(baseSize * qualityRatio * formatRatio))
   }
 }
 
@@ -1131,51 +1146,6 @@ const formatNoticeDesc = computed(() => {
 .selected-count:hover {
   background: rgba(64, 158, 255, 0.15);
   transform: translateY(-1px);
-}
-
-.image-item.selected {
-  outline: 2px solid #2196f3;
-  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
-}
-
-.total-stats {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-item span {
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.stat-item strong {
-  font-size: 1.25rem;
-  color: #2196f3;
-}
-
-.arrow {
-  color: #666;
-  font-size: 1.5rem;
-}
-
-.saving-rate {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  background: var(--saving-color);
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
 }
 
 .image-item {
@@ -2096,5 +2066,45 @@ const formatNoticeDesc = computed(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+}
+
+.total-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-item span {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.stat-item strong {
+  font-size: 1.25rem;
+  color: #2196f3;
+}
+
+.arrow {
+  color: #666;
+  font-size: 1.5rem;
+}
+
+.saving-rate {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  background: var(--saving-color);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 </style>
