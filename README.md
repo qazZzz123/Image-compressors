@@ -29,7 +29,7 @@
 
 ```bash
 # 克隆项目
-git clone [https://github.com/Zrnm1/image-compressor.git]
+git clone [https://github.com/qazZzz123/Image-compressors.git]
 
 # 进入项目目录
 cd image-compressor
