@@ -308,12 +308,7 @@ const compressImage = async (file: File, quality: number, format: string): Promi
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            // 确保压缩后的大小不会超过原始大小
-            if (blob.size > file.size) {
-              resolve(file)
-            } else {
-              resolve(blob)
-            }
+            resolve(blob)
           } else {
             reject(new Error('转换失败'))
           }
@@ -333,8 +328,8 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
     // 规范化质量值到30-95范围
     const normalizedQuality = Math.min(Math.max(quality, 30), 95)
     
-    // 如果是100%质量，直接返回原始大小
-    if (quality >= 95) {
+    // 无损格式返回原始大小
+    if (isLosslessFormat(format)) {
       return file.size
     }
 
@@ -343,15 +338,11 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
   } catch (error) {
     console.error('计算预计大小失败:', error)
     const baseSize = file.size
-
-    // 无损格式返回原始大小
-    if (isLosslessFormat(format)) {
-      return baseSize
-    }
-
-    // 其他格式使用质量参数估算
+    
+    // 估算压缩后的大小
     const qualityRatio = normalizedQuality / 100
     let formatRatio = 1
+    
     switch (format) {
       case 'image/jpeg':
         formatRatio = 0.8
@@ -359,9 +350,12 @@ const calculateEstimatedSize = async (file: File, quality: number, format: strin
       case 'image/webp':
         formatRatio = 0.6
         break
+      case 'image/avif':
+        formatRatio = 0.5
+        break
     }
 
-    return Math.min(baseSize, Math.round(baseSize * qualityRatio * formatRatio))
+    return Math.round(baseSize * qualityRatio * formatRatio)
   }
 }
 
